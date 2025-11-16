@@ -451,8 +451,8 @@ body{
 
       <div class="invite-item">
         <h3>📞 Confirmación</h3>
-        <p>552 564 8248</p>
-        <a class="invite-btn" href="https://wa.me/525525648248?text=Confirmo%20asistencia" target="_blank">✔ Confirmar por WhatsApp</a>
+        <p></p>
+        <a class="invite-btn" href="https://wa.me/5525648248?text=Confirmo%20asistencia" target="_blank">✔ Confirmar por WhatsApp</a>
       </div>
 
     </div>
@@ -463,12 +463,89 @@ body{
   <h3>📷 Credencial VIP Guerreras</h3>
   <p style="font-size:14px;opacity:.8">Sube tu foto y obtén tu pase oficial 🔥</p>
 
-  <div class="vip-pass" id="vipPreview">
+  <div class="vip-pass" id="vipPreview" style="display:flex;flex-direction:column;align-items:center;gap:12px;">
     <p style="opacity:.7;">Tu foto aparecerá aquí</p>
   </div>
 
   <input type="file" accept="image/*" id="vipInput" style="margin-top:12px">
+  <button id="vipGenerateBtn" class="invite-btn" style="margin-top:10px;">Generar pase</button>
+  <button id="vipDownloadBtn" class="invite-btn" style="margin-top:10px;display:none;">Descargar pase</button>
 </div>
+
+<script>
+const vipInput = document.getElementById('vipInput');
+const vipPreview = document.getElementById('vipPreview');
+const vipGenerateBtn = document.getElementById('vipGenerateBtn');
+const vipDownloadBtn = document.getElementById('vipDownloadBtn');
+
+let lastCanvas = null;
+
+function loadImage(src){
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = reject;
+    img.src = src;
+  });
+}
+
+vipGenerateBtn.addEventListener('click', async () => {
+  const file = vipInput.files[0];
+  if(!file){
+    alert('Por favor selecciona una foto.');
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = async (e) => {
+    const dataUrl = e.target.result;
+    const img = await loadImage(dataUrl);
+
+    // Crear canvas
+    const canvas = document.createElement('canvas');
+    const w = 400;
+    const h = 500;
+    canvas.width = w;
+    canvas.height = h;
+    const ctx = canvas.getContext('2d');
+
+    // Fondo
+    ctx.fillStyle = '#1b0028';
+    ctx.fillRect(0, 0, w, h);
+
+    // Imagen centrada
+    const imgH = h*0.7;
+    const imgW = img.width * (imgH/img.height);
+    const x = (w - imgW)/2;
+    ctx.drawImage(img, x, 20, imgW, imgH);
+
+    // Texto "¡Los esperamos!"
+    ctx.fillStyle = '#ff92ff';
+    ctx.font = 'bold 28px Montserrat, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('¡Los esperamos!', w/2, h - 40);
+
+    lastCanvas = canvas;
+
+    // Mostrar preview
+    vipPreview.innerHTML = '';
+    vipPreview.appendChild(canvas);
+
+    // Mostrar botón descargar
+    vipDownloadBtn.style.display = 'inline-block';
+  };
+
+  reader.readAsDataURL(file);
+});
+
+vipDownloadBtn.addEventListener('click', () => {
+  if(!lastCanvas) return;
+  const link = document.createElement('a');
+  link.href = lastCanvas.toDataURL('image/png');
+  link.download = 'pase_guerreras.png';
+  link.click();
+});
+</script>
 
    <center> <p class="invite-footer">✨ ¡Las esperamos guerreras! ✨</p></center>
   </div>
@@ -532,20 +609,9 @@ const timer = setInterval(() => {
 }, 1000);
 
 
-// SELFIE PASS UPLOADER
-document.getElementById("vipInput").addEventListener("change", function(e){
-  const file = e.target.files[0];
-  if(file){
-    const reader = new FileReader();
-    reader.onload = function(event){
-      document.getElementById("vipPreview").innerHTML =
-        `<img src="${event.target.result}" alt="VIP Pass">`;
-    }
-    reader.readAsDataURL(file);
-  }
-});
 
 </script>
+
 
 </body>
 </html>
